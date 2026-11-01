@@ -1,0 +1,10 @@
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+*.sqlite3
+.env
+server/frontend/static/assets/
+services/dealers/runtime.json
+evidence/private/
+*.log

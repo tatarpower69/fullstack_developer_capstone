@@ -1,0 +1,28 @@
+name: Capstone CI
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+      - name: Check Django and migrations
+        run: |
+          python server/manage.py check
+          python server/manage.py makemigrations --check --dry-run
+      - name: Test authentication, CSRF, review authorization, and catalog
+        run: python server/manage.py test djangoapp
+      - name: Test sentiment service
+        run: python -m unittest discover -s services/sentiment
+      - name: Build React frontend
+        working-directory: server/frontend
+        run: npm ci && npm run build
+      - name: Check Node API syntax
+        run: node --check services/dealers/index.js

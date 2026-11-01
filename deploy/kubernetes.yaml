@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dealership-sqlite
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dealership-web
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: dealership-web}
+  template:
+    metadata:
+      labels: {app: dealership-web}
+    spec:
+      containers:
+        - name: web
+          image: REPLACE_WITH_WEB_IMAGE
+          ports: [{containerPort: 8000}]
+          env:
+            - {name: DJANGO_DEBUG, value: '0'}
+            - {name: ALLOWED_HOSTS, value: 'REPLACE_WITH_PUBLIC_HOST'}
+            - {name: CSRF_TRUSTED_ORIGINS, value: 'https://REPLACE_WITH_PUBLIC_HOST'}
+            - {name: DATABASE_PATH, value: /data/db.sqlite3}
+            - {name: DEALERS_URL, value: 'http://dealership-dealers:3030'}
+            - {name: SENTIMENT_URL, value: 'http://dealership-sentiment:5050'}
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef: {name: dealership-secrets, key: django-secret-key}
+            - name: SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef: {name: dealership-secrets, key: service-token}
+          volumeMounts: [{name: data, mountPath: /data}]
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: '1', memory: 512Mi}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: dealership-sqlite}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dealership-web
+spec:
+  selector: {app: dealership-web}
+  ports: [{port: 8000, targetPort: 8000}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dealership-dealers
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: dealership-dealers}
+  template:
+    metadata:
+      labels: {app: dealership-dealers}
+    spec:
+      containers:
+        - name: dealers
+          image: REPLACE_WITH_DEALERS_IMAGE
+          ports: [{containerPort: 3030}]
+          env:
+            - {name: BIND_HOST, value: '0.0.0.0'}
+            - name: MONGO_URL
+              valueFrom:
+                secretKeyRef: {name: dealership-secrets, key: mongo-url}
+            - name: SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef: {name: dealership-secrets, key: service-token}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dealership-dealers
+spec:
+  selector: {app: dealership-dealers}
+  ports: [{port: 3030, targetPort: 3030}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dealership-sentiment
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: dealership-sentiment}
+  template:
+    metadata:
+      labels: {app: dealership-sentiment}
+    spec:
+      containers:
+        - name: sentiment
+          image: REPLACE_WITH_SENTIMENT_IMAGE
+          ports: [{containerPort: 5050}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dealership-sentiment
+spec:
+  selector: {app: dealership-sentiment}
+  ports: [{port: 5050, targetPort: 5050}]
