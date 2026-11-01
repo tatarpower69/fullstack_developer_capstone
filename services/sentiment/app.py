@@ -1,5 +1,6 @@
 """A transparent local lexicon baseline, not an IBM Watson model."""
 import re
+import os
 from flask import Flask, jsonify, request
 app = Flask(__name__)
 POSITIVE = {'fantastic', 'excellent', 'great', 'good', 'love', 'friendly', 'amazing', 'helpful', 'smooth', 'best', 'wonderful'}
@@ -23,4 +24,4 @@ def analyze_route():
 @app.get('/analyze/<path:text>')
 def analyze_path(text): return jsonify(analyze(text))
 
-if __name__ == '__main__': app.run(host='127.0.0.1', port=5050)
+if __name__ == '__main__': app.run(host='127.0.0.1', port=int(os.environ.get('SENTIMENT_PORT', '5050')))
