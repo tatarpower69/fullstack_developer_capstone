@@ -1,6 +1,6 @@
 # fullstack_developer_capstone — Cars Dealership
 
-Repository: **cars-dealership-capstone**  
+Repository: **fullstack_developer_capstone**  
 Project: **fullstack_developer_capstone** — Cars Dealership
 
 A responsive dealership directory with account registration, session login/logout, vehicle catalog, dealership details, customer reviews, sentiment labels, and Django administration.
