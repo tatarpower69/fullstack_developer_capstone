@@ -1,7 +1,7 @@
-# Cars Dealership
+# fullstack_developer_capstone — Cars Dealership
 
 Repository: **cars-dealership-capstone**  
-Project: **Cars Dealership — Full-stack Development Capstone**
+Project: **fullstack_developer_capstone** — Cars Dealership
 
 A responsive dealership directory with account registration, session login/logout, vehicle catalog, dealership details, customer reviews, sentiment labels, and Django administration.
 
@@ -14,6 +14,8 @@ A responsive dealership directory with account registration, session login/logou
 - Docker Compose connects the three services and MongoDB. GitHub Actions checks Django, runs tests, and builds React.
 
 All dealership records, contact information, team profiles, and initial reviews are demonstration data. Team photos are illustrative Unsplash images. This project was prepared with AI assistance; disclose that assistance according to course rules.
+
+The complete 50-dealership dataset, car records, and Bootstrap stylesheet come from the [official IBM starter](https://github.com/ibm-developer-skills-network/xrwvm-fullstack_developer_capstone), under the Apache 2.0 license included in LICENSE-IBM. Application code and layouts were implemented for this project.
 
 ## Local setup (Python 3.12+ and Node 22+)
 

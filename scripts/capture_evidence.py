@@ -26,13 +26,13 @@ for name,path in [('getdealerreviews','/djangoapp/reviews/dealer/1'),('getalldea
     record(name,[base+path])
 accounts=json.loads((private/'accounts.json').read_text())
 login_path=private/'login.json'
-login_path.write_text(json.dumps({'username':'capstone_driver','password':accounts['capstone_driver']}))
+login_path.write_text(json.dumps({'userName':'capstone_driver','password':accounts['capstone_driver']}))
 def post(name,path,datafile):
     run(['-c',cookie,'-b',cookie,base+'/djangoapp/csrf'])
     jar=http.cookiejar.MozillaCookieJar(cookie);jar.load(ignore_discard=True,ignore_expires=True)
     token=next(c.value for c in jar if c.name=='csrftoken')
     # A CSRF token is not a login secret; cookies and passwords stay in ignored files.
-    return record(name,['-c',cookie,'-b',cookie,'-H','Content-Type: application/json','-H','X-CSRFToken: '+token,'--data-binary','@'+str(datafile),base+path])
+    return record(name,['-X','POST','-c',cookie,'-b',cookie,'-H','Content-Type: application/json','-H','X-CSRFToken: '+token,'--data-binary',datafile.read_text(),base+path])
 post('loginuser','/djangoapp/login',login_path)
 empty=private/'empty.json';empty.write_text('{}')
 post('logoutuser','/djangoapp/logout',empty)

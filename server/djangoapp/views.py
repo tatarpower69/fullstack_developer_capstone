@@ -35,15 +35,15 @@ def user(request): return JsonResponse({'user': identity(request.user)})
 @require_POST
 def login_user(request):
     data = payload(request)
-    account = authenticate(request, username=data.get('username', ''), password=data.get('password', ''))
+    account = authenticate(request, username=data.get('userName', data.get('username', '')), password=data.get('password', ''))
     if account is None: return JsonResponse({'error': 'Invalid username or password'}, status=401)
     login(request, account)
-    return JsonResponse({'status': 'Authenticated', 'user': identity(account)})
+    return JsonResponse({'status': 'Authenticated', 'userName': account.username, 'user': identity(account)})
 
 @require_POST
 def logout_user(request):
     logout(request)
-    return JsonResponse({'status': 'Logged out'})
+    return JsonResponse({'status': 'Logged out', 'userName': ''})
 
 @require_POST
 def register(request):
@@ -102,7 +102,8 @@ def add_review(request):
 
 @require_GET
 def cars(request):
-    return JsonResponse({'car_models': [{'id': model.id, 'car_make': make.name, 'car_model': model.name, 'year': model.year, 'type': model.type} for make in CarMake.objects.prefetch_related('models') for model in make.models.all()]})
+    entries = [{'id': model.id, 'car_make': make.name, 'car_model': model.name, 'year': model.year, 'type': model.type} for make in CarMake.objects.prefetch_related('models') for model in make.models.all()]
+    return JsonResponse({'car_models': entries, 'CarModels': [{'CarMake': item['car_make'], 'CarModel': item['car_model']} for item in entries]})
 
 @require_GET
 def analyze(request):
