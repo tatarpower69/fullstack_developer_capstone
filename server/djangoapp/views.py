@@ -1,4 +1,5 @@
 import json
+from secrets import compare_digest
 import requests
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -9,7 +10,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import render
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from .models import CarMake
 
 def index(request): return render(request, 'index.html')
@@ -40,8 +41,15 @@ def login_user(request):
     login(request, account)
     return JsonResponse({'status': 'Authenticated', 'userName': account.username, 'user': identity(account)})
 
-@require_POST
+@require_http_methods(['GET', 'POST'])
 def logout_user(request):
+    if request.method == 'GET':
+        # The course's cURL client uses GET. Require a same-origin custom
+        # header with the CSRF cookie so links and prefetch cannot log out.
+        cookie = request.COOKIES.get(settings.CSRF_COOKIE_NAME, '')
+        token = request.headers.get('X-CSRFToken', '')
+        if len(cookie) != 32 or not token.isascii() or not compare_digest(cookie, token):
+            return JsonResponse({'error': 'CSRF verification failed'}, status=403)
     logout(request)
     return JsonResponse({'status': 'Logged out', 'userName': ''})
 

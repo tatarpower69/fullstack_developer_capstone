@@ -35,4 +35,8 @@ def post(name,path,datafile):
     return record(name,['-X','POST','-c',cookie,'-b',cookie,'-H','Content-Type: application/json','-H','X-CSRFToken: '+token,'--data-binary',datafile.read_text(),base+path])
 post('loginuser','/djangoapp/login',login_path)
 empty=private/'empty.json';empty.write_text('{}')
-post('logoutuser','/djangoapp/logout',empty)
+jar=http.cookiejar.MozillaCookieJar(cookie)
+jar.load(ignore_discard=True,ignore_expires=True)
+token=next(c.value for c in jar if c.name=='csrftoken')
+record('logoutuser',['-X','GET','-c',cookie,'-b',cookie,'-H','X-CSRFToken: '+token,base+'/djangoapp/logout'])
+assert json.loads(run(['-b',cookie,base+'/djangoapp/user']))['user'] is None
